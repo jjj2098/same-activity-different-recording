@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>같은 활동, 다른 기록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@600;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f7f4ee; --card:#ffffff; --ink:#1d2433; --sub:#5b6474; --line:#e3ddd1;
+  --good:#127a6a; --goodbg:#e3f4ef; --goodmk:#bfe8dc;
+  --bad:#c2462e; --badbg:#fbe9e4; --badmk:#f6cfc4;
+  --ban:#7a3fb0; --banbg:#f1e7fa;
+  --accent:#1f3a68; --gold:#c8962a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;line-height:1.65}
+button{font-family:inherit;cursor:pointer}
+.serif{font-family:"Noto Serif KR",serif}
+/* top bar */
+header{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;display:flex;align-items:center;gap:14px;padding:10px 20px;flex-wrap:wrap}
+header .brand{font-family:"Noto Serif KR",serif;font-weight:800;font-size:19px;letter-spacing:-.5px}
+header .brand small{font-family:"Noto Sans KR";font-weight:400;font-size:12px;opacity:.65;margin-left:8px}
+nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+nav button{background:transparent;border:1px solid rgba(255,255,255,.18);color:#d9deea;padding:6px 12px;border-radius:999px;font-size:13.5px}
+nav button.on{background:#fff;color:var(--ink);border-color:#fff;font-weight:700}
+nav button .t{opacity:.6;font-size:11.5px;margin-left:4px}
+.timer{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);padding:4px 6px 4px 12px;border-radius:999px}
+.timer .clock{font-variant-numeric:tabular-nums;font-weight:900;font-size:20px;min-width:62px;text-align:center}
+.timer .clock.warn{color:#ffb86b}.timer .clock.over{color:#ff7a6b}
+.timer button{background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:999px;padding:5px 10px;font-size:12.5px}
+main{max-width:1240px;margin:0 auto;padding:26px 22px 80px}
+.stage{display:none}.stage.on{display:block;animation:fade .35s}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+h1.big{font-family:"Noto Serif KR",serif;font-size:40px;letter-spacing:-1.5px;margin:6px 0 6px;line-height:1.25}
+h2{font-family:"Noto Serif KR",serif;font-size:27px;letter-spacing:-1px;margin:0 0 4px}
+.lead{color:var(--sub);font-size:16px;margin:0 0 22px}
+.kicker{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.08em;color:var(--gold);text-transform:uppercase}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:860px){.grid2,.grid3{grid-template-columns:1fr}h1.big{font-size:30px}}
+/* intro */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:20px 0}
+@media(max-width:860px){.flow{grid-template-columns:1fr 1fr}}
+.flow .st{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;transition:.2s}
+.flow .st:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.07)}
+.flow .st b{display:block;font-size:15.5px}
+.flow .st .min{font-size:26px;font-weight:900;color:var(--accent)}
+.flow .st p{margin:4px 0 0;font-size:13px;color:var(--sub)}
+.hero-compare{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;margin-top:10px}
+@media(max-width:860px){.hero-compare{grid-template-columns:1fr}}
+.quote{border-radius:14px;padding:18px;font-size:15.5px}
+.quote.b{background:var(--badbg);border-left:5px solid var(--bad)}
+.quote.g{background:var(--goodbg);border-left:5px solid var(--good)}
+.quote .lab{font-weight:900;font-size:13px;display:block;margin-bottom:6px}
+.quote.b .lab{color:var(--bad)}.quote.g .lab{color:var(--good)}
+.vs{align-self:center;font-family:"Noto Serif KR";font-weight:800;font-size:22px;color:var(--sub)}
+/* warmup */
+.wu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:860px){.wu-grid{grid-template-columns:1fr}}
+.wu{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative}
+.wu .num{position:absolute;top:-10px;left:14px;background:var(--ink);color:#fff;font-weight:900;font-size:12px;border-radius:999px;padding:2px 9px}
+.wu .txt{font-size:15.5px;margin:6px 0 12px;min-height:50px}
+.wu .btns{display:flex;gap:6px;flex-wrap:wrap}
+.wu .btns button{border:1px solid var(--line);background:#faf8f3;border-radius:8px;padding:6px 12px;font-size:13.5px;font-weight:500}
+.wu .btns button:hover{border-color:var(--ink)}
+.wu .fb{display:none;margin-top:10px;font-size:14px;border-radius:10px;padding:10px 12px}
+.wu.done .fb{display:block}
+.fb.g{background:var(--goodbg);color:#0d5a4e}.fb.b{background:var(--badbg);color:#8b2f1d}.fb.x{background:var(--banbg);color:#57287f}
+.wu .res{font-weight:900;margin-right:6px}
+.score-pill{display:inline-block;background:var(--ink);color:#fff;border-radius:999px;padding:4px 14px;font-weight:700;font-size:14px}
+/* lens */
+.adjverb{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.adjverb{grid-template-columns:1fr}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{border-radius:999px;padding:4px 11px;font-size:13.5px;font-weight:500}
+.chip.b{background:var(--badbg);color:var(--bad)}.chip.g{background:var(--goodbg);color:var(--good)}
+.chip.x{background:var(--banbg);color:var(--ban)}
+.steps4{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:12px}
+@media(max-width:860px){.steps4{grid-template-columns:1fr 1fr}}
+.steps4 div{padding:14px;border:1px solid var(--line);background:var(--card);margin-left:-1px}
+.steps4 div:first-child{border-radius:14px 0 0 14px}.steps4 div:last-child{border-radius:0 14px 14px 0}
+.steps4 .n{font-size:30px;font-weight:900;color:var(--gold);line-height:1}
+.steps4 b{display:block;font-size:16px;margin:4px 0}
+.steps4 p{margin:0;font-size:13.5px;color:var(--sub)}
+.comp{border-top:4px solid var(--accent)}
+.comp h4{margin:0 0 6px;font-size:17px}
+.comp ul{margin:0;padding-left:18px;font-size:14px;color:var(--sub)}
+.ban li{margin-bottom:4px}
+.note{font-size:12.5px;color:var(--sub);margin-top:8px}
+section.part{margin-bottom:26px}
+/* compare */
+.cmp-wrap{display:grid;grid-template-columns:250px 1fr;gap:18px}
+@media(max-width:960px){.cmp-wrap{grid-template-columns:1fr}}
+.side{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;align-self:start;position:sticky;top:76px;max-height:calc(100vh - 100px);overflow:auto}
+@media(max-width:960px){.side{position:static;max-height:none}}
+.filters{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.filters button{border:1px solid var(--line);background:#faf8f3;border-radius:999px;padding:3px 10px;font-size:12.5px}
+.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.plist button{display:flex;gap:8px;width:100%;text-align:left;border:0;background:transparent;padding:8px 8px;border-radius:10px;font-size:14px;align-items:center}
+.plist button:hover{background:#f3efe6}
+.plist button.on{background:#eae4d7;font-weight:700}
+.plist .no{flex:0 0 26px;height:26px;border-radius:50%;background:#efeadf;display:grid;place-items:center;font-size:12px;font-weight:900}
+.plist .ok .no{background:var(--good);color:#fff}
+.plist .ng .no{background:var(--bad);color:#fff}
+.plist .cat{font-size:11px;color:var(--sub);display:block;font-weight:400}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ph .tag{display:inline-block;background:var(--accent);color:#fff;border-radius:6px;padding:2px 9px;font-size:12.5px;font-weight:700;margin-right:6px}
+.ph h3{margin:6px 0 0;font-family:"Noto Serif KR";font-size:24px;letter-spacing:-.8px}
+.ph .situ{color:var(--sub);font-size:14px;margin-top:2px}
+.navbtn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 12px;font-size:13.5px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.cards{grid-template-columns:1fr}}
+.rec{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:.25s}
+.rec .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.rec .letter{font-family:"Noto Serif KR";font-size:28px;font-weight:800;line-height:1}
+.rec .meta{font-size:12px;color:var(--sub)}
+.rec .body{font-size:15.5px;line-height:1.85;flex:1;word-break:keep-all}
+.rec.isgood{border-color:var(--good);background:linear-gradient(#fff,#f7fcfa)}
+.rec.isbad{border-color:var(--bad);background:linear-gradient(#fff,#fdf7f5)}
+.verdict-badge{display:none;font-size:12.5px;font-weight:900;padding:3px 10px;border-radius:999px;color:#fff}
+.rec.isgood .verdict-badge{display:inline-block;background:var(--good)}
+.rec.isbad .verdict-badge{display:inline-block;background:var(--bad)}
+mark{border-radius:4px;padding:1px 2px;cursor:help}
+mark.g{background:var(--goodmk)}mark.b{background:var(--badmk)}
+mark sup{font-weight:900;font-size:10.5px;margin-left:1px}
+mark.g sup{color:var(--good)}mark.b sup{color:var(--bad)}
+.lens{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.lens .lt{font-size:12px;color:var(--sub);margin-right:2px}
+.lens label{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:8px;padding:3px 9px;font-size:13px;cursor:pointer;user-select:none;background:#fff}
+.lens label.chk{background:#fff7e3;border-color:var(--gold)}
+.lens label.right{outline:2px solid var(--good)}
+.lens label.wrong{outline:2px dashed var(--bad)}
+.lens input{display:none}
+.choose{display:flex;gap:10px;justify-content:center;margin:18px 0 6px;flex-wrap:wrap}
+.choose button{border:0;border-radius:12px;padding:12px 26px;font-size:16px;font-weight:900;background:var(--ink);color:#fff;transition:.15s}
+.choose button:hover{transform:translateY(-2px)}
+.choose button.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink);font-weight:500}
+.result{display:none;margin-top:16px}
+.result.on{display:block;animation:fade .4s}
+.res-banner{border-radius:14px;padding:14px 18px;font-weight:700;font-size:16px;margin-bottom:14px}
+.res-banner.ok{background:var(--goodbg);color:#0d5a4e}.res-banner.ng{background:var(--badbg);color:#8b2f1d}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.notes{grid-template-columns:1fr}}
+.notes ol{margin:6px 0 0;padding-left:20px;font-size:14px}
+.notes ol li{margin-bottom:6px}
+.notes h4{margin:0;font-size:15px}
+.notes .g h4{color:var(--good)}.notes .b h4{color:var(--bad)}
+.memo{margin-top:14px;background:#fffaf0;border:1px dashed var(--gold);border-radius:12px;padding:12px 16px;font-size:14.5px}
+.memo b{color:#8a6510}
+.taglist{margin-top:8px}.taglist span{display:inline-block;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:1px 10px;font-size:12.5px;margin:2px 4px 2px 0;font-weight:700}
+.tally{display:flex;gap:10px;align-items:center;justify-content:center;font-size:14px;color:var(--sub);margin-top:4px}
+.tally input{width:56px;padding:4px;border:1px solid var(--line);border-radius:8px;text-align:center;font-size:15px}
+/* rewrite */
+.rw-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.rw-tabs button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;font-size:14px}
+.rw-tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+textarea{width:100%;min-height:170px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-family:inherit;font-size:15px;line-height:1.75;resize:vertical;background:#fffefb}
+textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+.meter{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+@media(max-width:860px){.meter{grid-template-columns:1fr 1fr}}
+.meter div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12.5px;color:var(--sub)}
+.meter b{display:block;font-size:20px;color:var(--ink)}
+.meter .warn b{color:var(--bad)}.meter .okk b{color:var(--good)}
+.hint li{margin-bottom:4px}
+.model{display:none;margin-top:12px}.model.on{display:block;animation:fade .4s}
+/* wrap-up */
+.check7 label{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-bottom:1px dashed var(--line);cursor:pointer;font-size:15px}
+.check7 input{width:19px;height:19px;margin-top:3px;accent-color:var(--good)}
+.check7 small{display:block;color:var(--sub);font-size:12.5px}
+.printbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.printbtns button{border:0;border-radius:12px;padding:12px 18px;font-weight:700;background:var(--accent);color:#fff;font-size:14.5px}
+.printbtns button.alt{background:var(--gold)}
+.formula{font-family:"Noto Serif KR";font-size:22px;text-align:center;padding:18px;background:var(--ink);color:#fff;border-radius:14px;letter-spacing:-.5px}
+.formula em{font-style:normal;color:#ffd27a}
+/* teacher tip */
+.tt{background:#eef2fa;border-radius:12px;padding:10px 14px;font-size:13.5px;color:#2c3e66;margin-top:14px}
+.tt b{color:var(--accent)}
+/* print */
+#print{display:none}
+@media print{
+  @page{size:A4;margin:13mm}
+  body{background:#fff}
+  header,main{display:none!important}
+  #print{display:block;font-size:11pt;color:#000}
+  #print h1{font-family:"Noto Serif KR";font-size:18pt;margin:0 0 2mm}
+  #print h3{font-size:12.5pt;margin:5mm 0 2mm;border-left:4px solid #000;padding-left:6px}
+  #print table{width:100%;border-collapse:collapse;margin-bottom:2mm}
+  #print td,#print th{border:1px solid #555;padding:2.2mm;vertical-align:top;font-size:10pt}
+  #print th{background:#eee}
+  #print .pg{page-break-after:always}
+  #print .pair{page-break-inside:avoid;margin-bottom:5mm}
+  #print .pair .t{font-weight:700;margin-bottom:1.5mm}
+  #print .lines div{border-bottom:1px solid #999;height:8.5mm}
+  #print .info{display:flex;gap:6mm;font-size:10.5pt;margin-bottom:3mm}
+  #print .info span{border-bottom:1px solid #000;min-width:28mm;display:inline-block}
+  #print .small{font-size:9pt;color:#333}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">같은 활동, 다른 기록<small>좋은 생기부 vs 아쉬운 생기부 비교 분석 · 60분</small></div>
+  <nav id="nav"></nav>
+  <div class="timer">
+    <span class="clock" id="clock">05:00</span>
+    <button id="tStart">시작</button>
+    <button id="tReset">↺</button>
+  </div>
+</header>
+
+<main>
+<!-- 0 INTRO -->
+<div class="stage on" id="s0">
+  <span class="kicker">오늘의 수업</span>
+  <h1 class="big">같은 활동을 했는데,<br>왜 평가는 달라질까?</h1>
+  <p class="lead">입학사정관은 학생을 직접 만나지 않습니다. 오직 <b>기록된 문장</b>으로 학생을 만납니다. 오늘은 사정관의 눈으로 생기부 문장을 비교·해부하고, 직접 고쳐 써 봅니다.</p>
+
+  <div class="hero-compare">
+    <div class="quote b"><span class="lab">기록 ①</span>환경 문제에 관심이 많아 관련 영상을 시청하고 소감문을 작성함. 환경 보호에 앞장서는 모습이 돋보임.</div>
+    <div class="vs">VS</div>
+    <div class="quote g"><span class="lab">기록 ②</span>'생태계와 환경' 단원 학습 후 학급 분리배출함의 플라스틱 오염률이 궁금해 일주일간 관찰·기록함. 음식물이 남은 용기가 40%를 차지한다는 결과를 공유하고 헹굼 안내문을 부착한 뒤, 2주 후 재측정하여 오염률이 줄어든 변화를 보고함.</div>
+  </div>
+  <p class="note" style="text-align:center">두 학생 모두 '환경에 관심 있는 학생'입니다. 그런데 사정관이 <b>만나고 싶은 학생</b>은 누구일까요?</p>
+
+  <h2 style="margin-top:30px">60분 흐름</h2>
+  <div class="flow" id="flow"></div>
+
+  <div class="tt"><b>교사 TIP</b> 상단 메뉴로 단계를 이동하면 타이머가 그 단계 시간으로 맞춰집니다. 비교 분석은 모둠(4인) 단위로 진행하고, 활동지는 마지막 단계에서 인쇄할 수 있습니다. 예시 자료집을 미리 모둠 수만큼 인쇄해 두면 좋습니다.</div>
+</div>
+
+<!-- 1 WARMUP -->
+<div class="stage" id="s1">
+  <span class="kicker">STEP 1 · 5분</span>
+  <h2>워밍업 — 이 문장, 합격일까?</h2>
+  <p class="lead">한 문장씩 읽고 <b>좋은 기록 / 아쉬운 기록 / 기재 금지</b> 중 하나를 골라 보세요. 감으로 골라도 괜찮습니다.</p>
+  <div style="margin-bottom:14px"><span class="score-pill" id="wuScore">0 / 8</span> <button class="navbtn" id="wuReset" style="margin-left:6px">다시 하기</button></div>
+  <div class="wu-grid" id="wuGrid"></div>
+</div>
+
+<!-- 2 LENS -->
+<div class="stage" id="s2">
+  <span class="kicker">STEP 2 · 10분</span>
+  <h2>사정관의 렌즈 장착하기</h2>
+  <p class="lead">좋은 기록과 아쉬운 기록을 가르는 기준은 생각보다 단순합니다.</p>
+
+  <section class="part">
+    <h3 class="serif" style="font-size:21px;margin:0 0 10px">① 사정관은 '형용사'가 아니라 '동사'를 읽는다</h3>
+    <div class="adjverb">
+      <div class="box" style="border-top:4px solid var(--bad)">
+        <b style="color:var(--bad)">형용사·평가어 — 누구에게나 쓸 수 있다</b>
+        <div class="chips">
+          <span class="chip b">성실함</span><span class="chip b">우수함</span><span class="chip b">뛰어남</span><span class="chip b">적극적임</span><span class="chip b">리더십을 발휘함</span><span class="chip b">열정이 돋보임</span><span class="chip b">다양한 활동에 참여함</span><span class="chip b">원만함</span><span class="chip b">기대되는 학생임</span>
+        </div>
+        <p class="note">→ 근거 없는 칭찬은 사정관에게 <b>정보가 0</b>인 문장입니다.</p>
+      </div>
+      <div class="box" style="border-top:4px solid var(--good)">
+        <b style="color:var(--good)">동사·행동 — 그 학생만 할 수 있다</b>
+        <div class="chips">
+          <span class="chip g">의문을 가짐</span><span class="chip g">가설을 세움</span><span class="chip g">측정함</span><span class="chip g">비교함</span><span class="chip g">분류함</span><span class="chip g">한계를 인정함</span><span class="chip g">수정·보완함</span><span class="chip g">제안함</span><span class="chip g">확장함</span>
+        </div>
+        <p class="note">→ 행동이 보이면 사정관은 학생의 <b>역량을 스스로 판단</b>합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="part">
+    <h3 class="serif" style="font-size:21px;margin:0 0 4px">② 좋은 기록의 4단 구조 — 오늘 쓸 '렌즈'</h3>
+    <div class="steps4">
+      <div><span class="n">1</span><b>동기 · 질문</b><p>왜 시작했나? 수업의 어떤 내용에서 궁금증이 생겼나?</p></div>
+      <div><span class="n">2</span><b>과정 · 방법</b><p>어떻게 했나? 어떤 자료·기준·방법을 썼고, 어떤 어려움을 넘었나?</p></div>
+      <div><span class="n">3</span><b>결과 · 배움</b><p>무엇을 알게 됐나? 구체적인 발견이나 변화가 있나?</p></div>
+      <div><span class="n">4</span><b>확장 · 성장</b><p>그다음엔? 다른 과목·활동으로 이어졌거나 생각이 바뀌었나?</p></div>
+    </div>
+    <div class="formula" style="margin-top:14px">좋은 기록 = <em>질문</em> → <em>과정</em> → <em>발견</em> → <em>확장</em></div>
+  </section>
+
+  <section class="part">
+    <h3 class="serif" style="font-size:21px;margin:0 0 10px">③ 문장 속에서 읽히는 3대 역량</h3>
+    <div class="grid3">
+      <div class="box comp"><h4>학업역량</h4><ul><li>배운 것을 넘어서는 탐구력</li><li>자료를 분석·비교하는 사고력</li><li>스스로 질문하고 해결하는 태도</li></ul></div>
+      <div class="box comp"><h4>진로역량</h4><ul><li>진로 관련 과목에 대한 이해</li><li>관심 분야의 탐색 과정</li><li>억지 연결이 아닌 자연스러운 확장</li></ul></div>
+      <div class="box comp"><h4>공동체역량</h4><ul><li>협업과 소통, 갈등 조율</li><li>나눔과 배려의 구체적 행동</li><li>맡은 역할에 대한 책임</li></ul></div>
+    </div>
+  </section>
+
+  <section class="part">
+    <h3 class="serif" style="font-size:21px;margin:0 0 10px">④ 아무리 잘 써도 안 되는 것 — 기재 금지</h3>
+    <div class="box">
+      <ul class="ban" style="margin:0;padding-left:18px;font-size:14.5px">
+        <li><span class="chip x">교외 수상</span> 학교 밖 대회·경시대회 수상 실적</li>
+        <li><span class="chip x">공인어학시험</span> TOEIC, TOEFL, HSK 등 점수·급수</li>
+        <li><span class="chip x">특정 대학·기관·상호명</span> 대학명, 기업명, 학원명, 강사명 등</li>
+        <li><span class="chip x">부모의 사회·경제적 지위</span> 부모 직업·직위 암시</li>
+        <li><span class="chip x">교외 시험 성적</span> 모의고사 등급·석차 등</li>
+        <li><span class="chip x">사교육 유발 요소</span> 학원·과외·선행학습 언급</li>
+      </ul>
+      <p class="note">※ 세부 기준은 매년 교육부 「학교생활기록부 기재요령」을 따릅니다. 수업에서는 대표적인 항목만 다룹니다.</p>
+    </div>
+  </section>
+  <div class="tt"><b>교사 TIP</b> 워밍업에서 학생들이 고른 답을 떠올리며 "왜 1번 문장은 정보가 0일까?"를 질문하면 렌즈 설명이 자연스럽게 연결됩니다.</div>
+</div>
+
+<!-- 3 COMPARE -->
+<div class="stage" id="s3">
+  <span class="kicker">STEP 3 · 25분 · 모둠 활동</span>
+  <h2>비교 분석실 — 14쌍의 기록 해부</h2>
+  <p class="lead">같은 활동을 두 가지로 기록했습니다. ① 두 기록을 읽고 ② 각 기록에 4단 렌즈를 체크한 뒤 ③ 더 좋은 기록을 고르세요. 정답을 확인하면 <b>결정적 문장</b>이 형광펜으로 표시됩니다.</p>
+  <div class="cmp-wrap">
+    <aside class="side">
+      <div class="filters" id="filters"></div>
+      <div class="plist" id="plist"></div>
+      <div class="note" style="padding:6px 8px" id="cmpScore"></div>
+    </aside>
+    <div>
+      <div class="ph">
+        <div>
+          <span class="tag" id="pCat"></span><span style="font-size:13px;color:var(--sub)" id="pNo"></span>
+          <h3 id="pTitle"></h3>
+          <div class="situ" id="pSitu"></div>
+        </div>
+        <div style="display:flex;gap:6px"><button class="navbtn" id="prevP">← 이전</button><button class="navbtn" id="nextP">다음 →</button></div>
+      </div>
+      <div class="cards">
+        <div class="rec" id="recA"><div class="hd"><span class="letter">A</span><span><span class="verdict-badge"></span> <span class="meta"></span></span></div><div class="body"></div><div class="lens"></div></div>
+        <div class="rec" id="recB"><div class="hd"><span class="letter">B</span><span><span class="verdict-badge"></span> <span class="meta"></span></span></div><div class="body"></div><div class="lens"></div></div>
+      </div>
+      <div class="tally">모둠 투표 &nbsp;A <input type="number" min="0" id="vA" value="0"> &nbsp;:&nbsp; B <input type="number" min="0" id="vB" value="0"></div>
+      <div class="choose" id="choose">
+        <button data-c="A">A가 더 좋은 기록</button>
+        <button data-c="B">B가 더 좋은 기록</button>
+        <button class="ghost" data-c="?">정답만 보기</button>
+      </div>
+      <div class="result" id="result">
+        <div class="res-banner" id="resBanner"></div>
+        <div class="notes">
+          <div class="box g"><h4>✔ 좋은 기록의 결정적 문장</h4><ol id="gNotes"></ol></div>
+          <div class="box b"><h4>✘ 아쉬운 기록의 문제 문장</h4><ol id="bNotes"></ol></div>
+        </div>
+        <div class="memo"><b>사정관 메모</b> <span id="memo"></span><div class="taglist" id="tags"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 REWRITE -->
+<div class="stage" id="s4">
+  <span class="kicker">STEP 4 · 12분 · 모둠 활동</span>
+  <h2>고쳐 쓰기 — 아쉬운 기록을 살려라</h2>
+  <p class="lead">아쉬운 기록 하나를 골라 4단 구조(질문→과정→발견→확장)로 다시 써 보세요. 입력하면 오른쪽 계기판이 실시간으로 점검해 줍니다. 활동 내용은 상상해서 채워도 됩니다.</p>
+  <div class="rw-tabs" id="rwTabs"></div>
+  <div class="grid2">
+    <div>
+      <div class="quote b"><span class="lab">고칠 기록</span><span id="rwBad"></span></div>
+      <div class="box" style="margin-top:12px"><b>힌트 질문</b><ul class="hint" id="rwHint" style="margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--sub)"></ul></div>
+    </div>
+    <div>
+      <textarea id="rwText" placeholder="여기에 모둠이 고쳐 쓴 기록을 입력하세요. (예: '○○ 단원 학습 후 ~라는 의문을 가짐. …')"></textarea>
+      <div class="meter" id="meter"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="navbtn" id="showModel">모범 예시 보기</button>
+        <button class="navbtn" id="clearRw">지우기</button>
+      </div>
+      <div class="model quote g" id="model"><span class="lab">모범 예시</span><span id="modelTxt"></span></div>
+    </div>
+  </div>
+  <div class="tt"><b>교사 TIP</b> 모둠별로 다른 기록을 배정한 뒤, 2~3개 모둠의 결과를 화면에 띄워 계기판 점수와 함께 발표하게 하면 좋습니다. 계기판은 보조 도구일 뿐, 최종 판단은 '렌즈 4단'으로 합니다.</div>
+</div>
+
+<!-- 5 WRAP -->
+<div class="stage" id="s5">
+  <span class="kicker">STEP 5 · 8분</span>
+  <h2>정리 — 내 생기부를 위한 체크리스트 7</h2>
+  <p class="lead">오늘 배운 기준으로 내 활동을 점검해 봅시다. 생기부는 선생님이 쓰지만, <b>쓸 거리는 내가 만듭니다.</b></p>
+  <div class="grid2">
+    <div class="box check7" id="check7"></div>
+    <div>
+      <div class="box">
+        <b class="serif" style="font-size:18px">오늘의 한 문장</b>
+        <p style="font-size:15.5px;margin:8px 0">좋은 생기부는 <b>잘 쓴 문장</b>이 아니라 <b>잘 한 활동</b>에서 나온다.<br>수업 시간에 생긴 <b>작은 질문 하나</b>를 끝까지 따라가 보자.</p>
+        <hr style="border:0;border-top:1px dashed var(--line)">
+        <b>성찰 질문</b>
+        <ol style="font-size:14.5px;color:var(--sub);padding-left:18px;margin:6px 0 0">
+          <li>오늘 본 기록 중 가장 인상 깊었던 '결정적 문장'은?</li>
+          <li>이번 학기 나의 활동 중 '동사'로 설명할 수 있는 것은?</li>
+          <li>다음 수행평가·탐구에서 내가 던질 질문 하나는?</li>
+        </ol>
+      </div>
+      <div class="box" style="margin-top:14px">
+        <b>인쇄하기</b>
+        <p class="note" style="margin-top:4px">활동지는 학생 1인 1장(2쪽), 예시 자료집은 모둠별 1부 권장</p>
+        <div class="printbtns">
+          <button id="pWork">🖨 학생 활동지 인쇄</button>
+          <button class="alt" id="pBook">🖨 예시 자료집 인쇄 (14쌍)</button>
+          <button class="alt" id="pKey" style="background:#5b6474">🖨 교사용 정답·해설</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+
+<div id="print"></div>
+
+<script>
+/* =========================== DATA =========================== */
+const STAGES=[
+ {name:"시작",min:0,desc:""},
+ {name:"워밍업",min:5,desc:"한 문장 판정 퀴즈 8문항"},
+ {name:"렌즈 장착",min:10,desc:"형용사 vs 동사, 4단 구조, 3대 역량, 기재 금지"},
+ {name:"비교 분석",min:25,desc:"14쌍 기록을 모둠별로 해부"},
+ {name:"고쳐 쓰기",min:12,desc:"아쉬운 기록을 4단 구조로 재작성"},
+ {name:"정리",min:8,desc:"체크리스트 7과 성찰, 활동지"}
+];
+
+const WARM=[
+ {t:"수업에 적극적으로 참여하며 성실한 태도가 돋보임.",a:"b",e:"누구에게나 쓸 수 있는 문장이에요. 무엇을, 어떻게 했는지가 없어 사정관에게 정보가 거의 없습니다."},
+ {t:"모둠 실험에서 측정값이 이론값과 12% 차이 나자 온도 변인을 의심하고 재측정을 제안함.",a:"g",e:"문제 상황 → 원인 추론 → 행동이 한 문장에 담겼어요. 탐구력과 자기주도성이 보입니다."},
+ {t:"○○대학교 주최 과학 경시대회에서 금상을 수상함.",a:"x",e:"교외 수상 실적과 대학명은 기재할 수 없습니다. 아무리 큰 상이어도 생기부에는 들어가지 않아요."},
+ {t:"환경 문제에 관심이 많아 관련 영상을 시청하고 소감문을 작성함.",a:"b",e:"'영상 시청 + 소감문'은 가장 흔한 패턴이에요. 무엇이 궁금했고 무엇을 알게 됐는지가 빠져 있습니다."},
+ {t:"'같은 양의 설탕인데 왜 녹는 속도가 다를까'라는 질문에서 출발해 입자 크기와 표면적의 관계를 실험으로 확인함.",a:"g",e:"학생 자신의 질문이 그대로 드러나고, 그 질문을 실험으로 확인했어요. 좋은 기록의 출발점입니다."},
+ {t:"리더십이 뛰어나고 친구들에게 인기가 많음.",a:"b",e:"리더십은 '어떤 상황에서 무엇을 했는지'로 보여 줘야 해요. 인기는 평가 요소가 아닙니다."},
+ {t:"토론 후 반대 측 근거가 더 타당하다고 판단해 자신의 입장을 수정한 이유를 보고서에 기술함.",a:"g",e:"생각을 바꾼 과정이 기록됐어요. 지적 정직성과 비판적 사고는 사정관이 매우 좋아하는 요소입니다."},
+ {t:"TOEIC 950점을 취득할 정도로 영어 실력이 우수함.",a:"x",e:"공인어학시험 점수는 기재 금지입니다. 영어 역량은 수업 속 활동으로 보여 줘야 해요."}
+];
+
+/* {{문장|해설}} 표기 = 형광펜 */
+const PAIRS=[
+{cat:"세특",subj:"국어",title:"광고 언어 탐구",situ:"두 학생 모두 '설득 담화' 단원에서 광고를 분석해 발표했습니다.",
+ good:"{{'설득 담화의 표현 전략' 단원 학습 후, 같은 제품군이라도 표적 소비자에 따라 광고 문구가 달라지는지 의문을 가짐.|수업 내용에서 출발한 질문 → 탐구 동기가 분명함}} 10대 대상과 50대 대상 건강음료 광고 각 6편의 문구를 수집해 {{어휘 수준, 청유형·명령형 문장 비율, 감각어 사용 빈도를 표로 비교함.|비교 기준 3가지가 명시되어 '어떻게' 분석했는지 보임}} {{10대 대상 광고는 신조어와 청유형 문장이, 50대 대상 광고는 성분·수치 등 근거 제시형 문장이 두드러진다는 결과를 도출함.|발견한 결과가 구체적임}} {{발표 중 '표본이 적어 일반화하기 어렵다'는 질문을 받자 한계를 인정하고 분석 대상을 늘린 보완 보고서를 자발적으로 제출함.|한계 인정 + 자발적 보완 → 지적 정직성·자기주도성}}",
+ bad:"광고 속 언어 표현에 관심을 가지고 {{다양한 광고를 조사하여 발표함.|무엇을, 어떤 기준으로 조사했고 무엇을 알게 됐는지 없음}} {{발표 자료를 깔끔하게 정리하고 자신감 있게 발표하여 친구들의 호응을 얻음.|발표 '태도'만 있고 학생의 '생각'이 없음}} {{국어 실력이 우수하고 수업 태도가 성실함.|근거 없는 평가어 → 누구에게나 쓸 수 있는 문장}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["학업역량","탐구력","자기주도성"],
+ memo:"같은 '광고 탐구'인데 좋은 기록은 질문→방법→발견→보완이 보이고, 아쉬운 기록은 '했다'만 있습니다. 특히 '한계를 인정하고 보완'한 마지막 문장이 이 학생을 기억하게 만듭니다."},
+{cat:"세특",subj:"수학",title:"미분과 캔의 비밀",situ:"두 학생 모두 '도함수의 활용' 단원에서 실생활 탐구 보고서를 썼습니다.",
+ good:"{{도함수의 활용 단원에서 '부피가 같은 원기둥 캔의 겉넓이를 최소로 하는 조건'을 학습한 뒤, 실제 시판 음료 캔은 왜 그 비율을 따르지 않는지 의문을 제기함.|교과서 결론과 현실의 차이에서 나온 질문 → 수준 높은 동기}} {{캔 윗면·아랫면이 옆면보다 두껍다는 점을 조사해 면별 재료비 가중치를 둔 함수를 새로 세우고 미분하여 최적 비율을 다시 구함.|가정을 바꿔 모델을 수정함 → 수학적 사고의 핵심}} {{수정한 모델의 결과가 실제 캔 비율에 가까워지는 것을 확인하며, 수학 모델은 가정이 바뀌면 결론도 달라진다는 점을 보고서에 정리함.|결과 확인 + 일반화된 배움까지 기술}}",
+ bad:"{{수학에 대한 흥미가 높고 문제 해결 능력이 뛰어남.|평가어만 있음 → 근거가 없음}} {{어려운 문제도 포기하지 않고 끝까지 해결하려는 끈기를 보임.|어떤 문제를, 어떻게 해결했는지 없음}} {{미분을 활용한 실생활 문제에 대해 탐구 보고서를 작성함.|주제·방법·결과가 모두 빠진 활동 이름만 있음}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["학업역량","사고력","탐구력"],
+ memo:"'탐구 보고서를 작성함'은 활동의 이름일 뿐입니다. 좋은 기록은 '교과서의 정답이 현실과 왜 다를까?'라는 질문 하나로 학생의 수학적 사고 수준을 보여 줍니다."},
+{cat:"세특",subj:"영어",title:"AI 번역의 한계",situ:"두 학생 모두 영어 시간에 AI를 주제로 발표했습니다.",
+ good:"{{'Technology and Society' 단원과 연계해 AI 번역의 한계를 주제로 탐구함.|단원과의 연결이 명확함}} {{영어 관용 표현 20개를 번역기 두 종류에 입력해 직역 오류를 '문화적 맥락 누락', '비유 오해', '어순 왜곡'으로 분류함.|자료 수와 분류 기준이 구체적 → 분석력}} 분석 결과를 영어로 발표하며 {{번역은 단어를 바꾸는 일이 아니라 문화를 옮기는 일이라는 자신의 결론을 근거와 함께 제시함.|자기 생각(결론)이 분명함}} {{발표 후 질의응답에서 사람 번역가의 역할이 '검토와 문화적 조정'으로 바뀔 것이라는 견해를 논리적으로 전개함.|확장된 사고 + 영어 의사소통 역량}}",
+ bad:"{{영어 독해 능력이 뛰어나며 원어민처럼 유창한 발음으로 발표함.|과장된 평가어, 근거 없음}} {{TOEIC 900점을 취득할 정도로 영어 실력이 우수함.|공인어학시험 점수 → 기재 금지}} {{영어 시간에 'AI의 미래'를 주제로 발표함.|주제만 있고 내용·생각이 없음}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["학업역량","의사소통","기재금지 주의"],
+ memo:"영어 실력은 점수가 아니라 '영어로 무엇을 탐구하고 말했는가'로 증명됩니다. 아쉬운 기록에는 기재 금지 요소(공인어학시험)까지 섞여 있어요."},
+{cat:"세특",subj:"통합과학",title:"천연 지시약 실험",situ:"두 학생 모두 산·염기 실험에 참여하고 보고서를 냈습니다.",
+ good:"{{천연 지시약 실험에서 적양배추 지시약의 색 변화가 교과서 사진과 다르게 나타나자, 추출 시간과 용액 농도 차이를 원인으로 가설을 세움.|예상과 다른 결과 → 가설 설정. 실패에서 시작한 탐구}} {{추출 시간을 5분·10분·20분으로 달리한 비교 실험을 설계하고|변인 통제 실험을 직접 설계}}, {{같은 pH 용액이라도 지시약 농도가 낮으면 색 구분이 어렵다는 사실을 확인함.|구체적 발견}} {{'예상과 다른 결과가 오히려 변인을 생각하게 했다'는 성찰을 보고서에 남겼으며, 모둠원들에게 변인 통제의 중요성을 설명하며 재실험을 이끎.|성찰 + 협업(공동체역량)}}",
+ bad:"산과 염기의 중화 반응 실험에 참여하여 {{실험 결과를 정확하게 기록함.|'정확한 기록'은 기본. 차별점이 없음}} {{실험 보고서를 성실하게 작성하여 제출하였으며|'성실하게 제출'은 과제 수행일 뿐}} {{과학적 탐구 능력이 우수함.|탐구 과정이 없는데 탐구 능력이 우수하다는 결론}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["학업역량","탐구력","공동체역량"],
+ memo:"실험이 '잘 된' 기록보다 '예상과 달랐을 때 어떻게 했는지'가 훨씬 강력합니다. 실패는 숨길 것이 아니라 탐구의 출발점으로 기록될 수 있어요."},
+{cat:"세특",subj:"통합사회",title:"진로 연결의 기술",situ:"두 학생 모두 의료 분야에 관심이 있습니다.",
+ good:"{{인권 단원에서 '건강권'이 사회권에 속한다는 내용을 학습한 뒤, 지역별 응급의료기관 도달 시간 통계를 찾아 거주지에 따라 건강권 보장 수준이 다르다는 점에 주목함.|수업 개념 → 진로 관심으로 자연스럽게 연결}} {{통계 자료를 지도 위에 시각화해 발표하고, 의료 인력 확충만으로 해결되지 않는 교통·인구 구조 문제를 함께 제시함.|사회 문제를 다각도로 분석}} {{이후 시장경제 단원에서 공공재와 시장 실패 개념을 배우며 앞선 탐구를 '필수의료 공급 문제'로 확장해 보고서를 작성함.|다른 단원으로 탐구가 이어짐 → 확장}}",
+ bad:"{{의사가 꿈인 학생으로 인권 단원에서도 의료 관련 내용을 발표함.|'~에서도' → 모든 걸 진로에 끼워 맞춤}} {{시장경제 단원에서도 의사의 연봉에 관심을 가지고 조사함.|동기가 피상적이고 교과 개념과 무관}} {{모든 수업 활동을 진로와 연결하려는 열정이 돋보이며|억지 연결을 '열정'으로 포장}} {{○○대학교 의과대학 진학을 목표로 노력함.|특정 대학명 → 기재 금지}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["진로역량","학업역량","자연스러운 연계"],
+ memo:"진로 연계는 '과목 개념'이 먼저이고 진로가 뒤따라야 자연스럽습니다. 모든 과목을 진로에 억지로 끼우면 오히려 교과 이해가 얕아 보입니다."},
+{cat:"세특",subj:"정보",title:"잔반 예측 프로그램",situ:"두 학생 모두 프로그래밍을 잘하고 개발자를 희망합니다.",
+ good:"{{반복문 학습 후 학급 급식 잔반 문제를 해결하고자|배운 개념을 실제 문제에 적용하려는 동기}} 2주간 학급 친구들의 메뉴별 선호도 설문 데이터를 수집하고, {{파이썬으로 메뉴별 평균 선호도와 잔반 예측 점수를 계산하는 프로그램을 작성함.|구체적인 산출물}} {{처음에는 결측 응답 때문에 평균값이 왜곡되는 오류가 발생하자 조건문으로 결측치를 처리하는 코드를 추가해 해결함.|오류 → 원인 파악 → 해결의 과정}} {{결과를 그래프로 정리해 공유하고, 코드의 각 단계에 주석을 달아 친구들이 이해하기 쉽게 배포함.|나눔과 소통 → 공동체역량}}",
+ bad:"{{프로그래밍에 관심이 많아 파이썬을 독학함.|수업 외 독학은 수업 속 활동이 아님}} {{수업 시간에 코딩 과제를 가장 먼저 완성하였으며|속도 비교는 역량 근거가 약함}} {{컴퓨터를 잘 다룸.|막연한 평가}} {{앱 개발자가 되고 싶어 하는 학생임.|희망 직업만 제시, 탐색 과정 없음}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["학업역량","문제해결","공동체역량"],
+ memo:"'잘한다'보다 '무엇을 만들었고, 어디서 막혔고, 어떻게 풀었는가'가 핵심입니다. 오류 해결 과정 한 문장이 실력을 증명합니다."},
+{cat:"세특",subj:"한국사",title:"실학자의 질문",situ:"두 학생 모두 조선 후기 인물을 조사해 발표했습니다.",
+ good:"{{조선 후기 실학 단원 학습 중 '실학자들의 주장은 왜 정책으로 실현되지 못했을까'라는 질문을 던짐.|학생의 질문이 그대로 드러남}} {{정약용의 토지 개혁론과 당시 지배층의 이해관계를 비교 자료로 정리하고, 개혁안이 담긴 사료의 일부를 현대어로 풀어 읽으며 근거를 찾음.|사료 기반의 탐구 방법}} {{발표에서 '좋은 아이디어도 실현 구조가 없으면 변화로 이어지기 어렵다'는 결론을 오늘날 정책 사례와 연결해 제시함.|역사적 사고 → 현재로 확장}}",
+ bad:"{{역사에 대한 관심이 많아 조선 시대 인물에 대해 조사하여 발표함.|어떤 인물의 무엇을 조사했는지 없음}} {{역사 지식이 풍부하여 친구들이 자주 질문함.|지식의 양은 평가 포인트가 아님}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["학업역량","역사적 사고","확장"],
+ memo:"'지식이 많다'는 기록보다 '좋은 질문을 던졌다'는 기록이 훨씬 높게 평가됩니다. 사정관은 아는 학생보다 묻는 학생을 찾습니다."},
+{cat:"세특",subj:"체육",title:"레이업 슛의 성장",situ:"두 학생 모두 농구 수행평가에서 좋은 점수를 받았습니다.",
+ good:"{{농구 단원 초기 레이업 슛 성공률이 낮았으나,|부족했던 출발점을 숨기지 않음}} {{동료에게 자신의 동작을 촬영해 달라고 요청한 뒤 스텝 타이밍이 늦다는 점을 스스로 분석함.|스스로 원인을 찾는 방법}} {{2주간 점심시간에 스텝 연습을 반복하여 수행평가에서 성공률을 눈에 띄게 높였으며,|노력 과정과 결과의 변화}} {{같은 어려움을 겪는 친구에게 영상 분석 방법을 알려 줌.|배운 방법을 나눔 → 공동체역량}}",
+ bad:"{{운동 능력이 뛰어나고 모든 종목에서 우수한 실력을 보임.|타고난 능력 평가 → 성장 정보 없음}} {{체육 시간에 적극적으로 참여함.|모든 학생에게 해당될 수 있는 문장}}",
+ gl:[0,1,1,1],bl:[0,0,0,0],tags:["성장","자기주도성","공동체역량"],
+ memo:"예체능 과목도 '잘함'이 아니라 '나아짐'을 기록할 수 있습니다. 처음엔 못했지만 스스로 방법을 찾아 개선한 학생이 더 매력적이에요."},
+{cat:"세특",subj:"통합과학",title:"책 한 권의 깊이",situ:"두 학생 모두 과학 교양서를 읽었습니다.",
+ good:"{{'생물 다양성과 진화' 단원에서 자연선택 개념을 배운 뒤 『이기적 유전자』(리처드 도킨스)를 읽고, '이타적 행동이 어떻게 유전자 관점에서 설명될 수 있는가'라는 질문을 정리함.|수업 → 독서 → 질문의 연결}} {{책에 제시된 혈연선택 개념을 꿀벌의 일벌 사례에 적용해 설명하는 발표를 하였고,|읽은 내용을 다른 사례에 적용}} {{인간 사회의 협력은 유전자만으로 설명하기 어렵다는 반론을 함께 제시하여 과학 이론의 설명 범위에 대해 친구들과 토론함.|비판적 독서 + 토론으로 확장}}",
+ bad:"{{『이기적 유전자』, 『코스모스』, 『사피엔스』, 『정의란 무엇인가』, 『총, 균, 쇠』를 읽음.|제목 나열 → 무엇을 생각했는지 알 수 없음}} {{독서량이 많고 다양한 분야의 책을 읽는 학생임.|양을 강조, 깊이는 없음}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["학업역량","비판적 사고","독서 연계"],
+ memo:"책 다섯 권의 제목보다 한 권을 읽고 던진 질문 하나가 강력합니다. 좋은 독서 기록은 '왜 읽었고, 무엇을 의심했고, 어디에 적용했는가'를 보여 줍니다."},
+{cat:"세특",subj:"수학",title:"기재 금지 vs 수업 속 증명",situ:"두 학생 모두 수학을 아주 잘합니다.",
+ good:"{{수업 시간에 배운 경우의 수 개념을 활용해 학급 자리 배치의 공정성 문제를 탐구함.|수업 개념의 생활 적용}} {{무작위 배치에서 특정 학생이 앞자리에 연속 배치될 확률을 계산하고, 이를 줄이는 순환 배치 규칙을 제안함.|계산 → 해결안 제시}} {{친구들이 이해하기 어려워하는 부분은 직접 그린 수형도로 설명하여 학급 규칙 결정에 수학적 근거를 제공함.|수학으로 공동체에 기여}}",
+ bad:"{{교외 ○○경시대회에서 은상을 수상할 정도로 수학 실력이 뛰어남.|교외 수상 → 기재 금지}} {{방학 중 △△대학교 영재교육원 캠프에 참여하여 심화 학습을 함.|대학명·교외 활동 → 기재 불가}} {{학원에서 선행 학습한 내용을 바탕으로 친구들에게 문제 풀이를 설명해 줌.|사교육 유발 요소}} {{모의고사 수학 1등급을 유지함.|교외 시험 성적 → 기재 금지}}",
+ gl:[0,1,1,1],bl:[0,0,0,0],tags:["기재금지","학업역량","공동체역량"],
+ memo:"아쉬운 기록은 문장 전체가 기재 금지 사항입니다. 실제로는 이 내용이 모두 삭제되어 '빈칸'이 됩니다. 실력은 반드시 '수업 안'에서 보여 줘야 합니다."},
+{cat:"창체",subj:"자율·자치활동",title:"교실 소음 해결기",situ:"두 학생 모두 학급 활동에 열심히 참여했습니다.",
+ good:"{{학급 자치회의에서 쉬는 시간 교실 소음 문제가 반복적으로 제기되자, 학급 구성원 설문을 직접 제안하고 문항을 설계함.|문제 인식 → 주도적 제안}} {{응답 결과 '소음 자체보다 휴식 공간 부족이 원인'이라는 점을 발견하고, 교실 뒤편에 조용히 쉴 수 있는 '쉼 구역' 운영 규칙안을 마련함.|원인 분석 → 해결안}} {{한 달간 시범 운영 후 재설문을 실시해 만족도가 높아진 결과를 학급 회의에서 공유하고 규칙을 수정·보완함.|실행 → 평가 → 보완의 순환}}",
+ bad:"{{학급 회의, 학교 축제, 체육대회, 환경 정화 활동, 독도 교육, 학교폭력 예방 교육에 참여함.|학교 행사 나열 → 모든 학생이 똑같이 참여}} {{모든 활동에 성실하게 참여하여 학급 분위기 형성에 기여함.|'기여'의 내용이 없음}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["공동체역량","문제해결","리더십"],
+ memo:"'참여함'은 출석 확인에 가깝습니다. 자율활동에서는 하나의 문제를 끝까지 해결해 본 경험 하나가 수십 개의 참여보다 강합니다."},
+{cat:"창체",subj:"동아리활동",title:"하천 수질 프로젝트",situ:"두 학생 모두 과학탐구 동아리 부장입니다.",
+ good:"'학교 주변 하천 수질 변화' 연간 프로젝트에서 {{측정 일정과 역할 분담표를 제안함.|부장의 역할이 구체적}} {{강우 전후 탁도와 pH를 측정하는 과정에서 측정자마다 값이 달라지는 문제가 생기자, 측정 위치·시간·방법을 통일한 기록 양식을 만들어 데이터 신뢰도를 높임.|문제 발견 → 체계적 해결 → 탐구의 질 향상}} {{실험 경험이 적은 신입 부원을 위해 장비 사용법을 영상으로 제작·공유하여 모든 부원이 측정에 참여할 수 있도록 도움.|리더십을 '행동'으로 보여 줌}}",
+ bad:"{{과학탐구 동아리 부원으로 활동하며 다양한 실험에 참여함.|어떤 실험인지 없음}} {{동아리 활동을 통해 과학에 대한 흥미를 높였으며|흥미가 생긴 계기·내용이 없음}} 선후배 간 교류에도 적극적임. {{동아리 부장으로 리더십을 발휘함.|직책만 있고 리더로서 한 일이 없음}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["공동체역량","리더십","탐구력"],
+ memo:"'부장'이라는 직책은 아무것도 증명하지 않습니다. 부장으로서 어떤 문제를 발견하고 구성원을 어떻게 도왔는지가 리더십의 증거입니다."},
+{cat:"창체",subj:"진로활동",title:"교사라는 직업 탐색",situ:"두 학생 모두 교사를 희망합니다.",
+ good:"{{진로 탐색 주간에 교사 직무 인터뷰를 준비하며 '좋은 수업'의 기준이 무엇인지 질문 목록을 작성함.|준비 과정과 질문의 초점}} {{인터뷰 후 교사의 업무가 수업뿐 아니라 상담·행정·생활지도로 넓다는 점을 알게 되었고, 특히 학습 동기가 낮은 학생을 돕는 방법에 관심이 생김.|새로 알게 된 것 + 관심의 구체화}} {{이를 계기로 교육심리 관련 도서를 읽고 '칭찬의 방식이 학습 동기에 미치는 영향'을 정리하였으며,|관심 → 심화 탐구}} {{학급 멘토링에서 친구에게 결과 대신 과정을 칭찬하는 방식을 적용해 본 경험을 성찰 일지로 기록함.|배운 것을 실천하고 성찰함}}",
+ bad:"{{어릴 때부터 교사가 꿈이었으며 진로 희망이 변하지 않고 확고함.|'변하지 않음'은 장점이 아님. 탐색 과정이 중요}} {{진로 검사 결과 사회형이 높게 나옴.|검사 결과 나열}} {{교사 직업 체험 활동에 참여하고 소감문을 작성함.|소감문 내용 없음}} {{부모님이 모두 교사로 근무하시어 교육에 자연스럽게 관심을 가짐.|부모 직업 → 기재 금지}}",
+ gl:[1,1,1,1],bl:[0,0,0,0],tags:["진로역량","탐색 과정","실천"],
+ memo:"진로활동은 '꿈이 무엇인가'보다 '꿈을 어떻게 탐색했는가'를 봅니다. 진로가 바뀌어도 괜찮습니다. 바뀐 이유와 과정이 기록되면 오히려 강점이 됩니다."},
+{cat:"행특",subj:"행동특성 및 종합의견",title:"형용사 vs 일화",situ:"두 학생 모두 담임 선생님이 칭찬하는 모범생입니다.",
+ good:"{{학급 생활도우미로서 매일 아침 칠판의 일정 안내를 맡아 1년간 한 번도 빠뜨리지 않음.|'성실함'을 사실로 증명}} {{전학 온 친구가 수행평가 일정을 몰라 어려움을 겪자, 과목별 평가 일정과 준비물을 정리한 표를 만들어 건네고 모둠 활동에 자연스럽게 합류하도록 도움.|'배려심'을 일화로 증명}} {{모둠 과제에서 의견 충돌이 생기자 각자의 의견을 칠판에 적어 장단점을 비교하자고 제안하여 갈등을 조율함.|갈등 관리 역량}} 맡은 일을 끝까지 해내는 성실함과 타인의 어려움을 먼저 살피는 배려심을 갖춘 학생임.",
+ bad:"{{성실하고 책임감이 강하며 교우관계가 원만함.|평가어 3개 연속 → 근거 0개}} {{밝고 긍정적인 성격으로 친구들에게 인기가 많음.|인기는 평가 요소가 아님}} {{예의 바르고 바른 생활 태도를 지님.|누구에게나 쓸 수 있음}} {{앞으로가 더욱 기대되는 학생임.|정보 없는 맺음말}}",
+ gl:[0,1,1,0],bl:[0,0,0,0],tags:["공동체역량","인성","배려·갈등관리"],
+ memo:"좋은 기록도 마지막 문장은 평가어입니다. 하지만 앞의 일화들이 그 평가를 '증명'해 주기 때문에 설득력이 생깁니다. 평가어는 근거 뒤에 올 때만 힘을 가집니다."}
+];
+
+const REWRITE=[
+ {bad:"환경에 관심이 많아 환경 관련 영상을 보고 소감문을 작성함. 환경 보호에 앞장서는 학생임.",
+  hint:["어떤 수업 내용에서 환경 문제가 궁금해졌나?","직접 관찰·측정·조사한 것은?","그 결과 무엇을 알게 됐나? (숫자가 있으면 좋음)","알게 된 뒤 어떤 행동이나 변화로 이어졌나?"],
+  model:"통합과학 '생태계와 환경' 단원 학습 후 교내 분리배출함의 플라스틱 오염률이 궁금해 일주일간 학급 분리배출함을 관찰·기록함. 라벨이 붙어 있거나 음식물이 남은 용기가 전체의 40%를 차지한다는 결과를 학급에 공유하고, 헹굼·라벨 제거 안내문을 만들어 부착함. 2주 후 다시 측정하여 오염률이 줄어든 변화를 확인하고, 캠페인보다 '눈앞의 안내'가 행동 변화에 효과적이라는 점을 성찰 보고서에 정리함."},
+ {bad:"모둠 활동에서 리더십을 발휘하여 모둠을 이끔. 친구들과 협력을 잘함.",
+  hint:["어떤 과목의 어떤 모둠 활동이었나?","모둠에 어떤 문제(갈등·역할 쏠림 등)가 있었나?","그 문제를 해결하려고 구체적으로 무엇을 했나?","모둠 결과물이나 분위기가 어떻게 달라졌나?"],
+  model:"통합사회 모둠 토론 준비 과정에서 자료 조사가 특정 모둠원에게 몰리는 문제가 생기자, 쟁점을 4개로 나누어 각자 하나씩 맡는 역할표를 제안함. 발표가 서툰 모둠원에게는 근거 카드를 함께 정리해 주어 모두가 한 번 이상 발언하도록 도왔으며, 토론 후 모둠 회고에서 '역할을 나눌 때 각자의 강점을 먼저 묻는 것이 중요했다'는 소감을 발표함."},
+ {bad:"의학에 관심이 많아 의학 관련 책을 읽고 독서 감상문을 씀.",
+  hint:["어떤 수업 내용과 연결되나?","책 제목과, 읽으며 생긴 질문은?","그 질문을 어떻게 더 알아봤나?","생각이 바뀌거나 넓어진 점은?"],
+  model:"통합과학 '생명 시스템' 단원에서 세포막의 물질 이동을 배운 뒤, 약물이 세포 안으로 들어가는 원리가 궁금해 관련 교양서를 읽음. 크기와 극성에 따라 세포막 통과 방식이 달라진다는 내용을 교과서의 확산·삼투 개념과 연결하여 정리하고, 같은 약이라도 먹는 약과 주사의 효과가 나타나는 시간이 다른 이유를 친구들에게 그림으로 설명함."},
+ {bad:"수업 시간에 질문을 많이 하는 적극적인 학생임.",
+  hint:["실제로 어떤 질문을 했나? (질문 내용을 그대로)","그 질문은 왜 좋은 질문이었나?","질문 이후 스스로 더 알아본 것은?","그 결과 수업이나 친구들에게 어떤 영향이 있었나?"],
+  model:"수학 수업에서 '등차수열의 합 공식이 왜 항상 성립하는가'를 질문한 뒤, 교사의 설명을 듣는 데 그치지 않고 도형의 넓이를 이용한 증명 방법을 스스로 찾아 발표함. 공식을 외우기보다 원리를 확인하려는 태도로 다른 학생들도 '왜'를 묻게 되는 계기를 만들었으며, 이후 단원에서도 공식마다 유도 과정을 정리한 개념 노트를 작성함."}
+];
+
+const CHECK=[
+ ["누구에게나 쓸 수 있는 문장이 아닌가?","이름을 가리면 나라는 걸 알 수 있는 기록인가"],
+ ["무엇을 했는지 구체적인가?","주제, 자료, 대상, 숫자"],
+ ["왜 시작했는지(질문·동기)가 보이는가?","수업의 어떤 내용에서 궁금해졌나"],
+ ["어떻게 했는지(과정·방법)가 보이는가?","기준, 방법, 도구, 역할"],
+ ["어려움이나 실패를 어떻게 넘었는가?","예상과 다른 결과, 갈등, 오류"],
+ ["무엇을 배우고 어떻게 확장했는가?","다른 과목·활동·생각의 변화로 이어짐"],
+ ["기재 금지 사항이 없는가?","교외 수상, 어학시험, 대학·기관명, 부모 직업, 사교육"]
+];
+
+/* =========================== HELPERS =========================== */
+const $=s=>document.querySelector(s);
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const MK=/\{\{([^|}]+)\|([^}]+)\}\}/g;
+const plain=t=>t.replace(MK,"$1");
+function marked(t,cls,notes){
+  return esc(t).replace(/\{\{([^|}]+)\|([^}]+)\}\}/g,(m,a,b)=>{notes.push(b);return `<mark class="${cls}" title="${b}">${a}<sup>${notes.length}</sup></mark>`});
+}
+const LENS=["동기","과정","결과","확장"];
+/* A/B 배치 (섞기) */
+const GOOD_A=[false,true,true,false,true,false,false,true,false,true,true,false,true,false];
+
+/* =========================== NAV & TIMER =========================== */
+let cur=0, remain=0, running=false, tick=null;
+function buildNav(){
+  $("#nav").innerHTML=STAGES.map((s,i)=>`<button data-i="${i}">${i?i+". ":""}${s.name}${s.min?`<span class="t">${s.min}분</span>`:""}</button>`).join("");
+  $("#nav").onclick=e=>{const b=e.target.closest("button");if(b)go(+b.dataset.i)};
+  $("#flow").innerHTML=STAGES.slice(1).map((s,i)=>`<div class="st" data-i="${i+1}"><span class="min">${s.min}′</span><b>${i+1}. ${s.name}</b><p>${s.desc}</p></div>`).join("");
+  $("#flow").onclick=e=>{const b=e.target.closest(".st");if(b)go(+b.dataset.i)};
+}
+function go(i){
+  cur=i;
+  document.querySelectorAll(".stage").forEach((s,k)=>s.classList.toggle("on",k===i));
+  document.querySelectorAll("#nav button").forEach((b,k)=>b.classList.toggle("on",k===i));
+  setTimer(STAGES[i].min||5);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function setTimer(m){stop();remain=m*60;draw()}
+function draw(){
+  const c=$("#clock"),a=Math.abs(remain);
+  c.textContent=(remain<0?"-":"")+String(Math.floor(a/60)).padStart(2,"0")+":"+String(a%60).padStart(2,"0");
+  c.className="clock"+(remain<0?" over":remain<=60?" warn":"");
+}
+function stop(){running=false;clearInterval(tick);$("#tStart").textContent="시작"}
+$("#tStart").onclick=()=>{
+  if(running){stop();return}
+  running=true;$("#tStart").textContent="일시정지";
+  tick=setInterval(()=>{remain--;draw();if(remain===0)beep()},1000);
+};
+$("#tReset").onclick=()=>setTimer(STAGES[cur].min||5);
+function beep(){try{const ac=new (window.AudioContext||window.webkitAudioContext)();[0,.35,.7].forEach(t=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;o.connect(g);g.connect(ac.destination);g.gain.setValueAtTime(.2,ac.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+t+.3);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+.3)})}catch(e){}}
+
+/* =========================== WARMUP =========================== */
+let wuAns={};
+function buildWarm(){
+  const lab={g:"좋은 기록",b:"아쉬운 기록",x:"기재 금지"};
+  $("#wuGrid").innerHTML=WARM.map((w,i)=>`<div class="wu" id="wu${i}"><span class="num">${i+1}</span>
+    <div class="txt">${esc(w.t)}</div>
+    <div class="btns">${["g","b","x"].map(k=>`<button data-i="${i}" data-k="${k}">${lab[k]}</button>`).join("")}</div>
+    <div class="fb ${w.a}"><span class="res"></span>${lab[w.a]} — ${w.e}</div></div>`).join("");
+  $("#wuGrid").onclick=e=>{
+    const b=e.target.closest("button");if(!b)return;
+    const i=+b.dataset.i;if(wuAns[i])return;
+    wuAns[i]=b.dataset.k;const ok=WARM[i].a===b.dataset.k;
+    const el=$("#wu"+i);el.classList.add("done");
+    el.querySelector(".res").textContent=ok?"⭕ 정답!":"❌ 아쉬워요.";
+    b.style.background=ok?"var(--goodbg)":"var(--badbg)";b.style.borderColor=ok?"var(--good)":"var(--bad)";
+    $("#wuScore").textContent=Object.keys(wuAns).filter(k=>wuAns[k]===WARM[k].a).length+" / "+WARM.length;
+  };
+}
+$("#wuReset").onclick=()=>{wuAns={};buildWarm();$("#wuScore").textContent="0 / "+WARM.length};
+
+/* =========================== COMPARE =========================== */
+let pIdx=0, filt="전체", pState={}; // pState[i]={pick,lens:{A:[],B:[]}}
+const CATS=["전체","세특","창체","행특"];
+function visible(){return PAIRS.map((p,i)=>i).filter(i=>filt==="전체"||PAIRS[i].cat===filt)}
+function buildFilters(){
+  $("#filters").innerHTML=CATS.map(c=>`<button class="${c===filt?"on":""}" data-c="${c}">${c}</button>`).join("");
+  $("#filters").onclick=e=>{const b=e.target.closest("button");if(!b)return;filt=b.dataset.c;buildFilters();buildList();const v=visible();if(!v.includes(pIdx))showPair(v[0])};
+}
+function buildList(){
+  $("#plist").innerHTML=visible().map(i=>{
+    const st=pState[i];const cls=st&&st.done?(st.pick==="?"?"":st.ok?"ok":"ng"):"";
+    return `<button class="${cls} ${i===pIdx?"on":""}" data-i="${i}"><span class="no">${i+1}</span><span>${PAIRS[i].title}<span class="cat">${PAIRS[i].cat} · ${PAIRS[i].subj}</span></span></button>`}).join("");
+  $("#plist").onclick=e=>{const b=e.target.closest("button");if(b)showPair(+b.dataset.i)};
+  const done=Object.values(pState).filter(s=>s.done&&s.pick!=="?");
+  $("#cmpScore").textContent=done.length?`판정 ${done.length}쌍 중 ${done.filter(s=>s.ok).length}쌍 적중`:"모둠 판정 결과가 여기에 쌓입니다.";
+}
+function st(i){return pState[i]||(pState[i]={lens:{A:[0,0,0,0],B:[0,0,0,0]},done:false})}
+function showPair(i){
+  pIdx=i;const p=PAIRS[i],s=st(i),gA=GOOD_A[i];
+  $("#pCat").textContent=p.cat;$("#pNo").textContent=`${i+1} / ${PAIRS.length} · ${p.subj}`;
+  $("#pTitle").textContent=p.title;$("#pSitu").textContent=p.situ;
+  const sides={A:gA?"g":"b",B:gA?"b":"g"};
+  const notes={g:[],b:[]};
+  ["A","B"].forEach(L=>{
+    const k=sides[L],txt=k==="g"?p.good:p.bad,rec=$("#rec"+L);
+    rec.className="rec"+(s.done?(k==="g"?" isgood":" isbad"):"");
+    rec.querySelector(".verdict-badge").textContent=k==="g"?"좋은 기록":"아쉬운 기록";
+    rec.querySelector(".meta").textContent=plain(txt).length+"자";
+    rec.querySelector(".body").innerHTML=s.done?marked(txt,k,notes[k]):esc(plain(txt));
+    const key=k==="g"?p.gl:p.bl;
+    rec.querySelector(".lens").innerHTML=`<span class="lt">렌즈 체크</span>`+LENS.map((n,j)=>{
+      const on=s.lens[L][j];let c=on?"chk":"";
+      if(s.done)c+=(!!on===!!key[j])?" right":" wrong";
+      return `<label class="${c}" data-l="${L}" data-j="${j}">${on?"☑":"☐"} ${n}</label>`}).join("");
+  });
+  $("#gNotes").innerHTML=notes.g.map(n=>`<li>${n}</li>`).join("");
+  $("#bNotes").innerHTML=notes.b.map(n=>`<li>${n}</li>`).join("");
+  $("#memo").textContent=p.memo;
+  $("#tags").innerHTML=p.tags.map(t=>`<span>${t}</span>`).join("");
+  $("#result").classList.toggle("on",s.done);
+  $("#choose").style.display=s.done?"none":"flex";
+  if(s.done){
+    const goodL=gA?"A":"B";
+    const lensOk=["A","B"].reduce((a,L)=>a+s.lens[L].filter((v,j)=>!!v===!!(sides[L]==="g"?p.gl:p.bl)[j]).length,0);
+    const b=$("#resBanner");
+    if(s.pick==="?"){b.className="res-banner ok";b.textContent=`정답: ${goodL}가 좋은 기록입니다. 형광펜 표시된 문장을 함께 읽어 보세요.`}
+    else{b.className="res-banner "+(s.ok?"ok":"ng");b.textContent=(s.ok?`⭕ 정확합니다! ${goodL}가 좋은 기록입니다.`:`❌ 아쉬워요. 좋은 기록은 ${goodL}입니다.`)+`  · 렌즈 체크 일치 ${lensOk}/8`}
+  }
+  $("#vA").value=s.vA||0;$("#vB").value=s.vB||0;
+  buildList();
+}
+document.querySelectorAll(".rec .lens").forEach(el=>el.onclick=e=>{
+  const l=e.target.closest("label");if(!l)return;const s=st(pIdx);if(s.done)return;
+  const L=l.dataset.l,j=+l.dataset.j;s.lens[L][j]=s.lens[L][j]?0:1;showPair(pIdx);
+});
+$("#choose").onclick=e=>{
+  const b=e.target.closest("button");if(!b)return;const s=st(pIdx);
+  s.pick=b.dataset.c;s.done=true;s.ok=(b.dataset.c==="A")===GOOD_A[pIdx];showPair(pIdx);
+};
+$("#vA").oninput=e=>st(pIdx).vA=e.target.value;$("#vB").oninput=e=>st(pIdx).vB=e.target.value;
+$("#prevP").onclick=()=>{const v=visible(),k=v.indexOf(pIdx);showPair(v[(k-1+v.length)%v.length])};
+$("#nextP").onclick=()=>{const v=visible(),k=v.indexOf(pIdx);showPair(v[(k+1)%v.length])};
+
+/* =========================== REWRITE =========================== */
+let rIdx=0, rDrafts={};
+const ADJ=["성실","우수","뛰어","적극적","리더십","열정","원만","인기","다양한","돋보","기대되는","훌륭"];
+const BAN=["대학교","대학 ","TOEIC","토익","TOEFL","토플","HSK","학원","과외","선행","모의고사","등급을 유지","경시대회","수상","아버지","어머니","부모님"];
+const VERB=["의문","질문","가설","측정","비교","분석","조사","분류","설계","수정","보완","제안","확인","정리","적용","확장","성찰","해결","계산","관찰","기록함","발견"];
+function buildRw(){
+  $("#rwTabs").innerHTML=REWRITE.map((r,i)=>`<button class="${i===rIdx?"on":""}" data-i="${i}">기록 ${i+1}</button>`).join("");
+  $("#rwTabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;rDrafts[rIdx]=$("#rwText").value;rIdx=+b.dataset.i;buildRw()};
+  const r=REWRITE[rIdx];$("#rwBad").textContent=r.bad;
+  $("#rwHint").innerHTML=r.hint.map(h=>`<li>${h}</li>`).join("");
+  $("#rwText").value=rDrafts[rIdx]||"";$("#modelTxt").textContent=r.model;$("#model").classList.remove("on");
+  meter();
+}
+function meter(){
+  const t=$("#rwText").value;
+  const adj=ADJ.filter(w=>t.includes(w)).length;
+  const ban=BAN.filter(w=>t.includes(w));
+  const verb=VERB.filter(w=>t.includes(w)).length;
+  const num=(t.match(/\d+/g)||[]).length;
+  $("#meter").innerHTML=`
+   <div class="${t.length>=150?"okk":""}">글자 수<b>${t.length}</b>150자 이상 권장</div>
+   <div class="${verb>=4?"okk":""}">행동 동사<b>${verb}</b>4개 이상이면 좋아요</div>
+   <div class="${adj>=2?"warn":"okk"}">평가 형용사<b>${adj}</b>${adj>=2?"근거 없이 많아요":"적절해요"}</div>
+   <div class="${ban.length?"warn":"okk"}">기재 금지 의심<b>${ban.length}</b>${ban.length?esc(ban.join(", ")):"없음"}</div>`;
+  void num;
+}
+$("#rwText").oninput=meter;
+$("#showModel").onclick=()=>$("#model").classList.toggle("on");
+$("#clearRw").onclick=()=>{$("#rwText").value="";rDrafts[rIdx]="";meter()};
+
+/* =========================== WRAP / PRINT =========================== */
+function buildCheck(){
+  $("#check7").innerHTML=`<b class="serif" style="font-size:18px">좋은 생기부 체크리스트 7</b>`+CHECK.map((c,i)=>`<label><input type="checkbox"><span>${i+1}. ${c[0]}<small>${c[1]}</small></span></label>`).join("");
+}
+function doPrint(html){$("#print").innerHTML=html;setTimeout(()=>window.print(),150)}
+const lines=n=>`<div class="lines">${"<div></div>".repeat(n)}</div>`;
+$("#pWork").onclick=()=>{
+  doPrint(`<div class="pg">
+   <h1>같은 활동, 다른 기록 — 생기부 비교 분석 활동지</h1>
+   <div class="info">학번 <span></span> 이름 <span></span> 모둠 <span></span></div>
+   <h3>1. 워밍업 — 문장 판정 (좋음 ○ / 아쉬움 △ / 기재 금지 ×)</h3>
+   <table><tr>${WARM.map((w,i)=>`<th>${i+1}</th>`).join("")}</tr><tr>${WARM.map(()=>"<td style='height:9mm'></td>").join("")}</tr></table>
+   <h3>2. 형용사 vs 동사 — 오늘 찾은 '좋은 동사' 5개</h3>
+   <table><tr>${"<td style='height:10mm'></td>".repeat(5)}</tr></table>
+   <h3>3. 비교 분석 — 우리 모둠이 해부한 기록 3쌍</h3>
+   <table><tr><th style="width:11%">번호</th><th style="width:11%">좋은 기록</th><th style="width:20%">렌즈(동기·과정·결과·확장) 중 드러난 것</th><th>결정적 문장 (그대로 옮겨 쓰기)</th><th style="width:26%">아쉬운 기록의 문제점</th></tr>
+   ${[1,2,3].map(()=>`<tr><td style="height:24mm"></td><td>A / B</td><td></td><td></td><td></td></tr>`).join("")}</table>
+   <p class="small">※ 기재 금지: 교외 수상 · 공인어학시험 · 대학·기관·상호명 · 부모의 사회·경제적 지위 · 교외 시험 성적 · 사교육 유발 요소</p>
+  </div>
+  <div>
+   <h3>4. 고쳐 쓰기 — 질문 → 과정 → 발견 → 확장</h3>
+   <table><tr><th style="width:18%">고칠 기록 번호</th><td></td></tr></table>
+   <table><tr><th style="width:18%">① 질문·동기</th><td>${lines(2)}</td></tr><tr><th>② 과정·방법</th><td>${lines(2)}</td></tr><tr><th>③ 결과·배움</th><td>${lines(2)}</td></tr><tr><th>④ 확장·성장</th><td>${lines(2)}</td></tr></table>
+   <b>완성 문장</b>${lines(6)}
+   <h3>5. 나의 기록 점검 & 다짐</h3>
+   <table>${CHECK.map((c,i)=>`<tr><td style="width:6%;text-align:center">☐</td><td>${i+1}. ${c[0]} <span class="small">(${c[1]})</span></td></tr>`).join("")}</table>
+   <b>다음 수업에서 내가 던질 질문 하나</b>${lines(2)}
+  </div>`);
+};
+$("#pBook").onclick=()=>{
+  doPrint(`<h1>같은 활동, 다른 기록 — 예시 자료집 (14쌍)</h1><p class="small">각 쌍의 A, B 중 더 좋은 기록을 고르고, 근거가 되는 문장에 밑줄을 그어 보세요.</p>`+
+   PAIRS.map((p,i)=>{const gA=GOOD_A[i];const A=plain(gA?p.good:p.bad),B=plain(gA?p.bad:p.good);
+    return `<div class="pair"><div class="t">${i+1}. [${p.cat}·${p.subj}] ${p.title} — <span class="small">${p.situ}</span></div>
+    <table><tr><th style="width:50%">A</th><th>B</th></tr><tr><td>${esc(A)}</td><td>${esc(B)}</td></tr></table></div>`}).join(""));
+};
+$("#pKey").onclick=()=>{
+  doPrint(`<h1>교사용 정답·해설</h1>
+  <h3>워밍업</h3><table>${WARM.map((w,i)=>`<tr><td style="width:5%">${i+1}</td><td style="width:14%">${{g:"좋은 기록",b:"아쉬운 기록",x:"기재 금지"}[w.a]}</td><td>${esc(w.e)}</td></tr>`).join("")}</table>
+  <h3>비교 분석 14쌍</h3>`+PAIRS.map((p,i)=>{const gn=[],bn=[];marked(p.good,"g",gn);marked(p.bad,"b",bn);
+    return `<div class="pair"><div class="t">${i+1}. ${p.title} — 좋은 기록: <u>${GOOD_A[i]?"A":"B"}</u></div>
+    <table><tr><th style="width:50%">좋은 기록의 결정적 문장</th><th>아쉬운 기록의 문제</th></tr><tr><td>${gn.map((n,k)=>`${k+1}) ${n}`).join("<br>")}</td><td>${bn.map((n,k)=>`${k+1}) ${n}`).join("<br>")}</td></tr>
+    <tr><td colspan="2"><b>사정관 메모</b> ${p.memo}</td></tr></table></div>`}).join("")+
+  `<h3>고쳐 쓰기 모범 예시</h3><table>${REWRITE.map((r,i)=>`<tr><td style="width:30%">${i+1}. ${r.bad}</td><td>${r.model}</td></tr>`).join("")}</table>`);
+};
+
+/* =========================== INIT =========================== */
+buildNav();buildWarm();buildFilters();buildList();showPair(0);buildRw();buildCheck();go(0);
+</script>
+</body>
+</html>
